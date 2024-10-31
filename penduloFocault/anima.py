@@ -55,7 +55,7 @@ tiempolabel = label(pos = vector(0, 1.5*largoeje,0), box = 0, height = 30)
 
 while True:
     for t in range(len(time)):
-        rate(200)
+        rate(50)
         esfera.pos = vector(x[t],z[t]+1.2*largoeje,y[t])
         cuerda.axis = vector(x[t],z[t],y[t])
         tiempolabel.text = f"t = {round(time[t],1)}"
