@@ -1,7 +1,7 @@
 from vpython import *
 import numpy as np
 
-x,y,z,time, theta, phi = np.load("cartesianas_save.npy")
+time ,x,y,z, theta, phi = np.load("pendulo_data.npy")
 
 '''TENER CUIDADO
 
