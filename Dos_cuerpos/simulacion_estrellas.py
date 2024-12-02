@@ -7,7 +7,7 @@ import numpy as np
 G=6.67e-11
 m1=7.35e22    #Luna
 m2=5.97e24    # Tierra
-rdist=2e10 #Distancia entre la Tierra y la Luna
+rdist=3.9e6 #Distancia entre la Tierra y la Luna
 M=m1+m2
 x1=-(m2/M)*rdist
 x2=(m1/M)*rdist
@@ -34,8 +34,8 @@ while t<1e9:
   star1.pos=star1.pos+star1.p*dt/m1
   star2.pos=star2.pos+star2.p*dt/m2
   t=t+dt
-
+"""
 # Mantener la ventana abierta
 while True:
     pass
-    
+"""
