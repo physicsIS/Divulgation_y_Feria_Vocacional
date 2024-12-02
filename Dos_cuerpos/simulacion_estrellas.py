@@ -5,16 +5,16 @@ import numpy as np
 
 #NOTA: AGREGAR VALORES REALES DESPUES
 G=6.67e-11
-m1=7.35e22    #Luna
-m2=5.97e24    # Tierra
-rdist=3.9e6 #Distancia entre la Tierra y la Luna
+m1=4e30    #Luna
+m2=2e30    # Tierra
+rdist=2e10 #Distancia entre la Tierra y la Luna
 M=m1+m2
 x1=-(m2/M)*rdist
 x2=(m1/M)*rdist
 tierra_texture = "Tierra_skin.jpg"
 luna_texture = "Luna_skin.jpg"
-star1=sphere(pos=vector(x1,0,0), radius=1.737e6, texture=luna_texture, make_trail=True)
-star2=sphere(pos=vector(x2,0,0), radius=6.671e6, texture=tierra_texture, make_trail=True)
+star1=sphere(pos=vector(x1,0,0), radius=4e9, texture=luna_texture, make_trail=True)
+star2=sphere(pos=vector(x2,0,0), radius=8e9, texture=tierra_texture, make_trail=True)
 Rcom=(star1.pos*m1+star2.pos*m2)/M
 r=star2.pos-star1.pos
 v1circle=sqrt(G*m2*mag(star1.pos)/mag(r)**2)
@@ -34,8 +34,7 @@ while t<1e9:
   star1.pos=star1.pos+star1.p*dt/m1
   star2.pos=star2.pos+star2.p*dt/m2
   t=t+dt
-"""
+
 # Mantener la ventana abierta
 while True:
     pass
-"""
