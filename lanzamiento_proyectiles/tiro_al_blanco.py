@@ -146,6 +146,8 @@ y_Ni_fric = sol_Ni_fric.y[2]
 z_Ni_fric = sol_Ni_fric.y[4]
 
 
+time.sleep(10)
+
 i=0
 condicion = True
 while condicion == True:
