@@ -1,27 +1,71 @@
 import numpy as np
 
 class ModeloTermodinamico:
+    """
+    Clase base abstracta para modelos termodinámicos.
+
+    Métodos:
+        calcular_estado(estado, **kwargs): Calcula las propiedades termodinámicas de un estado.
+    """
+
     def calcular_estado(self, estado, **kwargs):
+        """
+        Método abstracto para calcular las propiedades de un estado.
+
+        Args:
+            estado (Estado): Objeto Estado a actualizar.
+            **kwargs: Propiedades conocidas del estado (por ejemplo, P, T, v...).
+
+        Raises:
+            NotImplementedError: Si no se implementa en una subclase.
+        """
         raise NotImplementedError("Este método debe ser implementado en una subclase.")
     
 
 class ModeloGasIdeal(ModeloTermodinamico):
-    def __init__(self, R=287, cp=1005, cv = 0.718, T0=0.1, P0=1):
+    """
+    Modelo de gas ideal con capacidades caloríficas constantes. Configurado por defecto para el aire.
 
-        """
-        Modelo de gas ideal para calcular propiedades termodinámicas. Considerando Cp y Cv constantes. Por defecto esta configurado para el aire
-        """
-        self.R = R # Constante del gas
-        self.cp = cp # Capacidad calorifica a presion constante
-        self.cv = cv # Capacidad calorifica a volumen constante
-        self.T0 = T0 # Temperatura base para hacer los calculos, todos los calculos se deben realizar sobre la misma temperatura
-        self.P0 = P0 # Presion base para hacer los calculos, todos los calculos se deben realizar sobre la misma presion
+    Args:
+        R (float): Constante del gas [J/kg·K].
+        cp (float): Capacidad calorífica a presión constante [J/kg·K].
+        cv (float): Capacidad calorífica a volumen constante [J/kg·K].
+        T0 (float): Temperatura de referencia [K].
+        P0 (float): Presión de referencia [Pa].
+
+    Métodos:
+        calcular_estado(estado, **kwargs): Calcula propiedades del estado con base en combinaciones de propiedades conocidas.
+    """
+
+    def __init__(self, R=287, cp=1005, cv = 0.718, T0=298.15, P0=101325): 
+        self.R = float(R)
+        self.cp = float(cp)
+        self.cv = float(cv) if cv is not None else self.cp - self.R
+        self.T0 = float(T0)
+        self.P0 = float(P0)
+        self.v0 = self.R * self.T0 / self.P0  # volumen específico de referencia
 
     def calcular_estado(self, estado, **kwargs):
         """
-        Calcula las propiedades del estado en función de las variables proporcionadas.
-        Permite distintas combinaciones: (P, T), (P, v), (T, v), (P, h), (T, s), etc.
+        Calcula las propiedades del estado en función de combinaciones de propiedades conocidas.
+
+        Combinaciones aceptables: 
+        - (P, T)
+        - (P, v)
+        - (T, v)
+        - (P, h)
+        - (s,v)
+        - (s,P)
+        - (T, s)
+
+        Args:
+            estado (Estado): Instancia del estado a calcular.
+            **kwargs: Combinaciones posibles de propiedades como 'P', 'T', 'v', 'h', 's'. 
+        
+        Raises:
+            ValueError: Si la combinación de propiedades no es soportada.
         """
+
         keys = kwargs.keys()
         
 		# A continuacion se presentan los casos que va a revisar el programa si se tiene los datos y calcula los datos faltantes si es posible
@@ -31,7 +75,7 @@ class ModeloGasIdeal(ModeloTermodinamico):
             estado.P = kwargs['P']
             estado.T = kwargs['T']
             estado.v = self.R * estado.T / estado.P
-            estado.u = self.cv*(estado.T - self.T0)
+            estado.u = self.cv*estado.T
             estado.h = self.cp * estado.T
             estado.s = self.cp * np.log(estado.T / self.T0) - self.R * np.log(estado.P / self.P0)
 
@@ -40,7 +84,7 @@ class ModeloGasIdeal(ModeloTermodinamico):
             estado.P = kwargs['P']
             estado.v = kwargs['v']
             estado.T = estado.P * estado.v / self.R
-            estado.u = self.cv*(estado.T - self.T0)
+            estado.u = self.cv*estado.T
             estado.h = self.cp * estado.T
             estado.s = self.cp * np.log(estado.T / self.T0) - self.R * np.log(estado.P / self.P0)
 
@@ -49,7 +93,7 @@ class ModeloGasIdeal(ModeloTermodinamico):
             estado.T = kwargs['T']
             estado.v = kwargs['v']
             estado.P = self.R * estado.T / estado.v
-            estado.u = self.cv*(estado.T - self.T0)
+            estado.u = self.cv*estado.T
             estado.h = self.cp * estado.T
             estado.s = self.cp * np.log(estado.T / self.T0) - self.R * np.log(estado.P / self.P0)
 
@@ -58,9 +102,156 @@ class ModeloGasIdeal(ModeloTermodinamico):
             estado.P = kwargs['P']
             estado.h = kwargs['h']
             estado.T = estado.h / self.cp
-            estado.u = self.cv*(estado.T - self.T0)
+            estado.u = self.cv*estado.T
             estado.v = self.R * estado.T / estado.P
             estado.s = self.cp * np.log(estado.T / self.T0) - self.R * np.log(estado.P / self.P0)
+        
+        # Caso 5: Conozco Entropía (s) y Volumen (v)
+        elif 's' in keys and 'v' in keys:
+            estado.s = kwargs['s']
+            estado.v = kwargs['v']
+            estado.T = self.T0*np.exp((1/self.cv)*(estado.s-self.R*np.log(estado.v/self.v0)))
+            estado.P = self.R * estado.T / estado.v
+            estado.u = self.cv*estado.T
+            estado.h = self.cp * estado.T
+
+        # Caso 6: Conozco Entropía (s) y Presion (P)
+        elif 's' in keys and 'P' in keys:
+            estado.s = kwargs['s']
+            estado.P = kwargs['P']
+            estado.T = self.T0*np.exp((1/self.cp)*(estado.s+self.R*np.log(estado.P/self.P0)))
+            estado.v = self.R * estado.T / estado.P
+            estado.u = self.cv*estado.T
+            estado.h = self.cp * estado.T
+
+        # Caso 7: Conozco Entropía (s) y Temperatura (T)
+        elif 's' in keys and 'T' in keys:
+            estado.s = kwargs['s']
+            estado.T = kwargs['T']
+            estado.P = self.P0*np.exp((1/self.R)*(self.cp*np.log(estado.T/self.T0)-estado.s))
+            estado.v = self.R * estado.T / estado.P
+            estado.u = self.cv*estado.T
+            estado.h = self.cp * estado.T
+
+        else:
+            raise ValueError(f"Combinación de propiedades no soportada o insuficiente. Claves recibidas {list(keys)}")
+        
+from scipy.optimize import fsolve
+
+######################################
+######################################
+######################################
+#           Cocinando
+######################################
+######################################
+######################################
+
+class ModeloVanDerWaals(ModeloTermodinamico):
+    """
+    Modelo termodinámico basado en la ecuación de Van der Waals.
+
+    Parámetros
+    ----------
+    a : float
+        Constante de atracción (Pa·m⁶/mol²).
+    b : float
+        Volumen excluido por mol (m³/mol).
+    R : float, opcional
+        Constante del gas (por mol), por defecto 8.314 J/mol·K.
+    T0 : float, opcional
+        Temperatura de referencia (K).
+    P0 : float, opcional
+        Presión de referencia (Pa).
+    """
+
+    def __init__(self, a, b, R=8.314, T0=298.15, P0=101325):
+        self.a = a
+        self.b = b
+        self.R = R
+        self.T0 = T0
+        self.P0 = P0
+        self.v0 = self.R * self.T0 / self.P0  # volumen molar de referencia (ideal)
+
+    def calcular_estado(self, estado, **kwargs):
+        """
+        Calcula propiedades termodinámicas a partir de combinaciones válidas.
+
+        Soporta combinaciones como: (P, T), (T, v), (P, v), (s, v), (s, P), (T, s), etc.
+        """
+
+        keys = kwargs.keys()
+
+        if 'P' in keys and 'T' in keys:
+            estado.P = kwargs['P']
+            estado.T = kwargs['T']
+            estado.v = self._resolver_volumen(estado.T, estado.P)
+            self._calcular_propiedades(estado)
+
+        elif 'T' in keys and 'v' in keys:
+            estado.T = kwargs['T']
+            estado.v = kwargs['v']
+            estado.P = self._presion(estado.T, estado.v)
+            self._calcular_propiedades(estado)
+
+        elif 'P' in keys and 'v' in keys:
+            estado.P = kwargs['P']
+            estado.v = kwargs['v']
+            estado.T = self._temperatura(estado.P, estado.v)
+            self._calcular_propiedades(estado)
+
+        elif 'P' in keys and 'h' in keys:
+            estado.P = kwargs['P']
+            estado.h = kwargs['h']
+            raise NotImplementedError("Cálculo desde (P, h) no implementado para Van der Waals.")
+
+        elif 's' in keys and 'v' in keys:
+            estado.s = kwargs['s']
+            estado.v = kwargs['v']
+            estado.T = self._resolver_temperatura_desde_sv(estado.s, estado.v)
+            estado.P = self._presion(estado.T, estado.v)
+            self._calcular_propiedades(estado)
+
+        elif 's' in keys and 'P' in keys:
+            raise NotImplementedError("Cálculo desde (s, P) no implementado para Van der Waals.")
+
+        elif 's' in keys and 'T' in keys:
+            raise NotImplementedError("Cálculo desde (s, T) no implementado para Van der Waals.")
 
         else:
             raise ValueError("Combinación de propiedades no soportada o insuficiente.")
+
+    def _presion(self, T, v):
+        """Devuelve la presión (Pa) usando la ecuación de Van der Waals."""
+        return (self.R * T) / (v - self.b) - self.a / v**2
+
+    def _temperatura(self, P, v):
+        """Devuelve la temperatura (K) a partir de presión y volumen."""
+        return ((P + self.a / v**2) * (v - self.b)) / self.R
+
+    def _resolver_volumen(self, T, P):
+        """Resuelve numéricamente el volumen molar usando fsolve."""
+        def f(v):
+            return P - self._presion(T, v)
+        v_guess = self.R * T / P  # estimación inicial (gas ideal)
+        v_solution, = fsolve(f, v_guess)
+        return v_solution
+
+    def _resolver_temperatura_desde_sv(self, s, v):
+        """Calcula T desde entropía y volumen."""
+        T_guess = self.T0
+        def f(T):
+            s_calc = self.R * np.log((T / self.T0) * ((v - self.b) / self.v0))
+            return s_calc - s
+        T_solution, = fsolve(f, T_guess)
+        return T_solution
+
+    def _calcular_propiedades(self, estado):
+        """
+        Calcula u, h, s a partir de P, T y v. Se asume gas monoatómico (Cv = 3/2 R).
+        """
+        Cv = 1.5 * self.R
+        Cp = Cv + self.R
+
+        estado.u = Cv * estado.T - self.a / estado.v
+        estado.h = estado.u + estado.P * estado.v
+        estado.s = self.R * np.log((estado.T / self.T0) * ((estado.v - self.b) / self.v0))
