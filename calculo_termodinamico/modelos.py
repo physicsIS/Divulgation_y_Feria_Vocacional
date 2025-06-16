@@ -192,7 +192,7 @@ class ModeloGasIdeal(ModeloTermodinamico):
 		self.cv = float(cv) if cv is not None else self.cp - self.R_gas
 		self.T0 = float(T0)
 		self.P0 = float(P0)
-		self.v0 = self.R_gas * self.T0 / self.P0  # volumen específico de referencia
+		self.v0 = self.R_gas*self.T0/self.P0  # volumen específico de referencia
 
 
 
@@ -206,7 +206,7 @@ class ModeloGasIdeal(ModeloTermodinamico):
 			Retorna la temperatura T para un gas ideal en un proceso isocórico, dado P.
 			"""
 			P = np.asarray(P)  # Asegura que P se pueda vectorizar
-			return self.R_gas*estado_in.v*P
+			return estado_in.v*P/self.R_gas
 		return isocorico_ModeloGasIdeal
 
 	def resolver_isotermico(self, estado_in, estado_out, **kwargs):
@@ -275,7 +275,10 @@ class ModeloGasIdeal(ModeloTermodinamico):
 		# Gas ideal
 		self.calcular_estado(estado_in)
 		self.calcular_estado(estado_out)
-		def isoentropico_ModeloGasIdeal(v=None, P=None):
+		def isoentropico_ModeloGasIdeal(v):
+			"""
+			Retorna la presión P para un gas ideal en un proceso isoentropico, dado v.
+			"""
 			# Ambos están definidos
 			if estado_in.v is not None:
 				if estado_in.P is not None:
@@ -292,13 +295,13 @@ class ModeloGasIdeal(ModeloTermodinamico):
 			else:
 				print("ERROR: No estan definidos los volumenes")
 				return None
-			return isoentropico_ModeloGasIdeal
+		return isoentropico_ModeloGasIdeal
 
 	def resolver_politropico(self, estado_in, estado_out, n, **kwargs):
 		super().resolver_politropico(estado_in, estado_out)
 		# Gas ideal
 
-	def calcular_estado(self, estado, **kwargs):
+	def calcular_estado(self, estado):
 		"""
 		Calcula las propiedades del estado en función de combinaciones de propiedades conocidas.
 
@@ -318,76 +321,60 @@ class ModeloGasIdeal(ModeloTermodinamico):
 		Raises:
 			ValueError: Si la combinación de propiedades no es soportada.
 		"""
-
-		keys = kwargs.keys()
 		
 		# A continuacion se presentan los casos que va a revisar el programa si se tiene los datos y calcula los datos faltantes si es posible
 		
 		# Caso 1: Conozco Presión (P) y Temperatura (T)
-		if 'P' in keys and 'T' in keys:
-			estado.P = kwargs['P']
-			estado.T = kwargs['T']
+		if (estado.P is not None) and (estado.T is not None):
 			estado.v = self.R_gas * estado.T / estado.P
 			estado.u = self.cv*estado.T
 			estado.h = self.cp * estado.T
 			estado.s = self.cp * np.log(estado.T / self.T0) - self.R_gas * np.log(estado.P / self.P0)
 
 		# Caso 2: Conozco Presión (P) y Volumen (v)
-		elif 'P' in keys and 'v' in keys:
-			estado.P = kwargs['P']
-			estado.v = kwargs['v']
+		elif (estado.P is not None) and (estado.v is not None):
 			estado.T = estado.P * estado.v / self.R_gas
 			estado.u = self.cv*estado.T
 			estado.h = self.cp * estado.T
 			estado.s = self.cp * np.log(estado.T / self.T0) - self.R_gas * np.log(estado.P / self.P0)
 
 		# Caso 3: Conozco Temperatura (T) y Volumen (v)
-		elif 'T' in keys and 'v' in keys:
-			estado.T = kwargs['T']
-			estado.v = kwargs['v']
+		elif (estado.T is not None) and (estado.v is not None):
 			estado.P = self.R_gas * estado.T / estado.v
 			estado.u = self.cv*estado.T
 			estado.h = self.cp * estado.T
 			estado.s = self.cp * np.log(estado.T / self.T0) - self.R_gas * np.log(estado.P / self.P0)
 
 		# Caso 4: Conozco Presión (P) y Entalpía (h)
-		elif 'P' in keys and 'h' in keys:
-			estado.P = kwargs['P']
-			estado.h = kwargs['h']
+		elif (estado.P is not None) and (estado.h is not None):
 			estado.T = estado.h / self.cp
 			estado.u = self.cv*estado.T
 			estado.v = self.R_gas * estado.T / estado.P
 			estado.s = self.cp * np.log(estado.T / self.T0) - self.R_gas * np.log(estado.P / self.P0)
 		
 		# Caso 5: Conozco Entropía (s) y Volumen (v)
-		elif 's' in keys and 'v' in keys:
-			estado.s = kwargs['s']
-			estado.v = kwargs['v']
+		elif (estado.s is not None) and (estado.v is not None):
 			estado.T = self.T0*np.exp((1/self.cv)*(estado.s-self.R_gas*np.log(estado.v/self.v0)))
 			estado.P = self.R_gas * estado.T / estado.v
 			estado.u = self.cv*estado.T
 			estado.h = self.cp * estado.T
 
 		# Caso 6: Conozco Entropía (s) y Presion (P)
-		elif 's' in keys and 'P' in keys:
-			estado.s = kwargs['s']
-			estado.P = kwargs['P']
+		elif (estado.s is not None) and (estado.P is not None):
 			estado.T = self.T0*np.exp((1/self.cp)*(estado.s+self.R_gas*np.log(estado.P/self.P0)))
 			estado.v = self.R_gas * estado.T / estado.P
 			estado.u = self.cv*estado.T
 			estado.h = self.cp * estado.T
 
 		# Caso 7: Conozco Entropía (s) y Temperatura (T)
-		elif 's' in keys and 'T' in keys:
-			estado.s = kwargs['s']
-			estado.T = kwargs['T']
+		elif (estado.s is not None) and (estado.T is not None):
 			estado.P = self.P0*np.exp((1/self.R_gas)*(self.cp*np.log(estado.T/self.T0)-estado.s))
 			estado.v = self.R_gas * estado.T / estado.P
 			estado.u = self.cv*estado.T
 			estado.h = self.cp * estado.T
 
 		else:
-			raise ValueError(f"Combinación de propiedades no soportada o insuficiente. Claves recibidas {list(keys)}")
+			raise ValueError(f"Combinación de propiedades no soportada o insuficiente.")
 		
 from scipy.optimize import fsolve
 
