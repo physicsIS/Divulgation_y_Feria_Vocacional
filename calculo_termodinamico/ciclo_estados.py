@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import numpy as np
 from typing import List, Optional
 
 
@@ -40,7 +41,7 @@ class Estado:
 
 	def actualizar(self, **kwargs):
 		"""
-		Actualiza las propiedades del estado usando el modelo asociado.
+		Calcula las propiedades del estado usando el modelo asociado.
 
 		Args:
 			**kwargs: Propiedades conocidas (por ejemplo, P, T, s, h...).
@@ -64,24 +65,36 @@ class CicloTermodinamico:
 
 	Atributes:
 		modelo (ModeloTermodinamico): Modelo termodinámico utilizado.
+		n_estaodos (int): Número de estados que conforman el ciclo.
+		n_values (int): Número de estados internos a cada proceso del ciclo.
 		estados (list[Estado]): Lista de estados que componen el ciclo.
 	"""
 
-	def __init__(self, modelo):
+	def __init__(self, modelo,n_estados, n_values):
 		self.modelo = modelo
-		self.estados = []
+		self.n_values = n_values
+		self.estados = np.empty(n_estados, dtype=object) # Se conocen la cantidad de estados que tiene el ciclo
+		self.estados_internos = np.empty((n_estados,n_values), dtype=object) # Se genera una lista para los estados internos entre cada proceso.
+		self._indice_estado_actual = 0  # contador interno
 
 	def agregar_estado(self, nombre, **kwargs):
 		"""
-		Crea y agrega un nuevo estado al ciclo.
+		Crea y agrega un nuevo estado al ciclo. Se espera que se coloquen en el orden que se va a recorrer el ciclo.
 
 		Args:
 			nombre (str): Nombre identificador del estado.
 			**kwargs: Propiedades conocidas para calcular el estado.
 		"""
+
+		if self._indice_estado_actual >= len(self.estados):
+			raise IndexError("Se han agregado más estados de los permitidos.")
+
 		estado = Estado(self.modelo, nombre)
-		estado.actualizar(**kwargs)
-		self.estados.append(estado)
+		#estado.actualizar(**kwargs)
+		self.estados[self._indice_estado_actual] = estado
+		self._indice_estado_actual +=1
+
+	
 
 	def mostrar_ciclo(self):
 		"""
