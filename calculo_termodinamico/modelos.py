@@ -17,6 +17,17 @@ class ModeloTermodinamico:
 			estado_in (Estado): Estado de entrada en la secuencia del ciclo.
 			estado_out (Estado): Estado de salida en la secuencia del ciclo.
 		'''
+		# Definir alguno de los estados involucrados si es posible:
+		if sum(value is not None for value in vars(estado_in).values()) >= 2:
+			if sum(value is not None for value in vars(estado_in).values()) ==6:
+				print(f"{estado_in.nombre} esta definido")
+			else:
+				self.calcular_estado(estado_in)
+		elif sum(value is not None for value in vars(estado_out).values()) >= 2:
+			if sum(value is not None for value in vars(estado_out).values()) ==6:
+				print(f"{estado_out.nombre} esta definido")
+			else:
+				self.calcular_estado(estado_out)
 
 		# Ambos están definidos
 		if estado_in.v is not None and estado_out.v is not None:
@@ -45,6 +56,18 @@ class ModeloTermodinamico:
 			estado_in (Estado): Estado de entrada en la secuencia del ciclo.
 			estado_out (Estado): Estado de salida en la secuencia del ciclo.
 		'''
+		# Definir alguno de los estados involucrados si es posible:
+		if sum(value is not None for value in vars(estado_in).values()) >= 2:
+			if sum(value is not None for value in vars(estado_in).values()) ==6:
+				print(f"{estado_in.nombre} esta definido")
+			else:
+				self.calcular_estado(estado_in)
+		elif sum(value is not None for value in vars(estado_out).values()) >= 2:
+			if sum(value is not None for value in vars(estado_out).values()) ==6:
+				print(f"{estado_out.nombre} esta definido")
+			else:
+				self.calcular_estado(estado_out)
+	
 		# Ambos están definidos
 		if estado_in.T is not None and estado_out.T is not None:
 			if estado_in.T == estado_out.T:
@@ -72,6 +95,17 @@ class ModeloTermodinamico:
 			estado_in (Estado): Estado de entrada en la secuencia del ciclo.
 			estado_out (Estado): Estado de salida en la secuencia del ciclo.
 		'''
+		# Definir alguno de los estados involucrados si es posible:
+		if sum(value is not None for value in vars(estado_in).values()) >= 2:
+			if sum(value is not None for value in vars(estado_in).values()) ==6:
+				print(f"{estado_in.nombre} esta definido")
+			else:
+				self.calcular_estado(estado_in)
+		elif sum(value is not None for value in vars(estado_out).values()) >= 2:
+			if sum(value is not None for value in vars(estado_out).values()) ==6:
+				print(f"{estado_out.nombre} esta definido")
+			else:
+				self.calcular_estado(estado_out)
 
 		if estado_in.P is not None and estado_out.P is not None:
 			if estado_in.P == estado_out.P:
@@ -99,6 +133,17 @@ class ModeloTermodinamico:
 			estado_in (Estado): Estado de entrada en la secuencia del ciclo.
 			estado_out (Estado): Estado de salida en la secuencia del ciclo.
 		'''
+		# Definir alguno de los estados involucrados si es posible:
+		if sum(value is not None for value in vars(estado_in).values()) >= 2:
+			if sum(value is not None for value in vars(estado_in).values()) ==6:
+				print(f"{estado_in.nombre} esta definido")
+			else:
+				self.calcular_estado(estado_in)
+		elif sum(value is not None for value in vars(estado_out).values()) >= 2:
+			if sum(value is not None for value in vars(estado_out).values()) ==6:
+				print(f"{estado_out.nombre} esta definido")
+			else:
+				self.calcular_estado(estado_out)
 
 		# Ambos están definidos
 		if estado_in.h is not None and estado_out.h is not None:
@@ -127,6 +172,17 @@ class ModeloTermodinamico:
 			estado_in (Estado): Estado de entrada en la secuencia del ciclo.
 			estado_out (Estado): Estado de salida en la secuencia del ciclo.
 		'''
+		# Definir alguno de los estados involucrados si es posible:
+		if sum(value is not None for value in vars(estado_in).values()) >= 2:
+			if sum(value is not None for value in vars(estado_in).values()) ==6:
+				print(f"{estado_in.nombre} esta definido")
+			else:
+				self.calcular_estado(estado_in)
+		elif sum(value is not None for value in vars(estado_out).values()) >= 2:
+			if sum(value is not None for value in vars(estado_out).values()) ==6:
+				print(f"{estado_out.nombre} esta definido")
+			else:
+				self.calcular_estado(estado_out)
 
 		# Ambos están definidos
 		if estado_in.s is not None and estado_out.s is not None:
@@ -149,6 +205,139 @@ class ModeloTermodinamico:
 
 	def resolver_politropico(self, estado_in, estado_out, n):
 		raise NotImplementedError()
+	
+	def resolver_in_or_out_calor(self, estado_in, estado_out, calor):
+		'''
+		Esta función relaciona dos estados a través de agregar o sacar calor a temperatura constante.
+
+		La funcion maneja la convencion de que el calor entrante es positivo y el calor saliente es negativo.
+
+		Args:
+			estado_in (Estado): Estado de entrada en la secuencia del ciclo.
+			estado_out (Estado): Estado de salida en la secuencia del ciclo.
+		'''
+		# Definir alguno de los estados involucrados si es posible:
+		if sum(value is not None for value in vars(estado_in).values()) >= 2:
+			if sum(value is not None for value in vars(estado_in).values()) ==6:
+				print(f"{estado_in.nombre} esta definido")
+			else:
+				self.calcular_estado(estado_in)
+		elif sum(value is not None for value in vars(estado_out).values()) >= 2:
+			if sum(value is not None for value in vars(estado_out).values()) ==6:
+				print(f"{estado_out.nombre} esta definido")
+			else:
+				self.calcular_estado(estado_out)
+
+		# Revisar que las temperatura de los estados sean la misma
+
+		# Ambos están definidos
+		if estado_in.T is not None and estado_out.T is not None:
+			if estado_in.T == estado_out.T:
+				print(f"Las temperaturas de los estados {estado_in.nombre} y {estado_out.nombre} fueron definidas y son iguales.")
+			else:
+				print(f"Las temperaturas de los estados {estado_in.nombre} y {estado_out.nombre} fueron definidas pero no son iguales. Se recomienda revisar.")
+		
+		# Solo el estado_in tiene temperatura definido
+		elif estado_in.T is not None:
+			estado_out.T = estado_in.T
+		
+		# Solo el estado_out tiene temperatura definido
+		elif estado_out.T is not None:
+			estado_in.T = estado_out.T
+		
+		# Ninguno tiene volumen definido
+		else:
+			print(f"Ninguno de los estados {estado_in.nombre} ni {estado_out.nombre} tiene la temperatura definida. Se requiere al menos una.")
+	
+	""" def resolver_interenfriamiento_recalentamiento(self, estado_in, estado_out, delta_T):
+		'''
+		Esta función relaciona dos estados a través de agregar o sacar calor con un cambio conocido de T.
+
+		La funcion maneja la convencion de que el calor entrante es positivo y el calor saliente es negativo.
+
+		Args:
+			estado_in (Estado): Estado de entrada en la secuencia del ciclo.
+			estado_out (Estado): Estado de salida en la secuencia del ciclo.
+			delta_T (float): Cambio de temperatura estado_out.T - estado_in.T.
+		'''
+		# Definir alguno de los estados involucrados si es posible:
+		if sum(value is not None for value in vars(estado_in).values()) >= 2:
+			if sum(value is not None for value in vars(estado_in).values()) ==6:
+				print(f"{estado_in.nombre} esta definido")
+			else:
+				self.calcular_estado(estado_in)
+		elif sum(value is not None for value in vars(estado_out).values()) >= 2:
+			if sum(value is not None for value in vars(estado_out).values()) ==6:
+				print(f"{estado_out.nombre} esta definido")
+			else:
+				self.calcular_estado(estado_out)
+
+		# Revisar que las temperatura de los estados sean la misma
+
+		# Ambos están definidos
+		if estado_in.T is not None and estado_out.T is not None:
+			if (estado_in.T - estado_out.T) < 1e-6:
+				print(f"Las temperaturas de los estados {estado_in.nombre} y {estado_out.nombre} fueron definidas y son iguales. Se recomienda revisar, no es el comportamiento esperado para este proceso.")
+				if estado_in.P is not None and estado_out.P is not None:
+					if (estado_in.P - estado_out.P)<1e-6:
+						print(f"Las presiones de los estados {estado_in.nombre} y {estado_out.nombre} fueron definidos y son iguales. Correcto para un proceso de interenfriamiento o recalentamiento")
+						print("No es posible calcular el proceso ni definir los estados.")
+					else:
+						print(f"Las presiones de los estados {estado_in.nombre} y {estado_out.nombre} fueron definidos y NO SON IGUALES. NO ES congruente con el proceso de interenfriamiento o recalentamiento")
+						print("No es posible calcular el proceso ni definir los estados.")
+			else:
+				print(f"Las temperaturas de los estados {estado_in.nombre} y {estado_out.nombre} fueron definidas pero no son iguales. Es un comportamiento esperado.")
+				if estado_in.P is not None and estado_out.P is not None:
+					if (estado_in.P - estado_out.P)<1e-6:
+						print(f"Las presiones de los estados {estado_in.nombre} y {estado_out.nombre} fueron definidos y son iguales. Correcto para un proceso de interenfriamiento o recalentamiento")
+					else:
+						print(f"Las presiones de los estados {estado_in.nombre} y {estado_out.nombre} fueron definidos y NO SON IGUALES. NO ES congruente con el proceso de interenfriamiento o recalentamiento")
+				elif estado_in.P is not None:
+					estado_out.P = estado_in.P
+					self.calcular_estado(estado_in)
+					self.calcular_estado(estado_out)
+				elif estado_out.P is not None:
+					estado_in.P = estado_out.P
+					self.calcular_estado(estado_in)
+					self.calcular_estado(estado_out)
+		
+		# Solo el estado_in tiene temperatura definido
+		elif estado_in.T is not None:
+			estado_out.T = estado_in.T + delta_T
+			if estado_in.P is not None and estado_out.P is not None:
+					if (estado_in.P - estado_out.P)<1e-6:
+						self.calcular_estado(estado_in)
+						self.calcular_estado(estado_out)
+			elif estado_in.P is not None:
+					estado_out.P = estado_in.P
+					self.calcular_estado(estado_in)
+					self.calcular_estado(estado_out)
+			elif estado_out.P is not None:
+					estado_in.P = estado_out.P
+					self.calcular_estado(estado_in)
+					self.calcular_estado(estado_out)
+		
+		# Solo el estado_out tiene temperatura definido
+		elif estado_out.T is not None:
+			estado_in.T = estado_out.T - delta_T
+			if estado_in.P is not None and estado_out.P is not None:
+					if (estado_in.P - estado_out.P)<1e-6:
+						self.calcular_estado(estado_in)
+						self.calcular_estado(estado_out)
+			elif estado_in.P is not None:
+					estado_out.P = estado_in.P
+					self.calcular_estado(estado_in)
+					self.calcular_estado(estado_out)
+			elif estado_out.P is not None:
+					estado_in.P = estado_out.P
+					self.calcular_estado(estado_in)
+					self.calcular_estado(estado_out)
+		
+		# Ninguno tiene volumen definido
+		else:
+			print(f"Ninguno de los estados {estado_in.nombre} ni {estado_out.nombre} tiene la temperatura y la presion definida. Se requiere al menos una de cada una.")
+"""
+
 
 	def calcular_estado(self, estado, **kwargs):
 		"""
@@ -280,6 +469,7 @@ class ModeloGasIdeal(ModeloTermodinamico):
 			Retorna la presión P para un gas ideal en un proceso isoentropico, dado v.
 			"""
 			# Ambos están definidos
+			v = np.asarray(v)
 			if estado_in.v is not None:
 				if estado_in.P is not None:
 					return estado_in.P*(estado_in.v/v)**(self.cp/self.cv)
@@ -296,6 +486,56 @@ class ModeloGasIdeal(ModeloTermodinamico):
 				print("ERROR: No estan definidos los volumenes")
 				return None
 		return isoentropico_ModeloGasIdeal
+	
+
+	def resolver_in_or_out_calor(self, estado_in, estado_out, calor):
+		super().resolver_in_or_out_calor(estado_in, estado_out, calor)
+		# Gas ideal
+		# La entropia
+		if estado_in.s is not None and estado_out.s is not None:
+			if estado_in.s == estado_out.s:
+				print(f"Las entropias de los estados {estado_in.nombre} y {estado_out.nombre} fueron definidos y son iguales. Esto es un error, agragar o sacar calor cambia la entropia.")
+			else:
+				if (estado_in.s -(estado_out.s + calor/estado_out.T)< 1e-6):
+					print(f"Las entropias de los estados {estado_in.nombre} y {estado_out.nombre} fueron definidos pero no son iguales. Son congruentes con el cambio esperado")
+				else:
+					print(f"Las entropias de los estados {estado_in.nombre} y {estado_out.nombre} fueron definidos pero no son iguales. NO SON congruentes con el cambio esperado " + r"$\Delta$ s =" + f"{estado_in.s - estado_out.s}" + r"Q/T =" +f"{calor/estado_out.T}")
+		
+		# Solo el estado_in tiene volumen definido
+		elif estado_in.s is not None:
+			estado_out.s =  estado_in.s + calor/estado_out.T
+			self.calcular_estado(estado_in)
+			self.calcular_estado(estado_out)
+		
+		# Solo el estado_out tiene volumen definido
+		elif estado_out.s is not None:
+			estado_in.s = estado_out.s - calor/estado_out.T
+			self.calcular_estado(estado_in)
+			self.calcular_estado(estado_out)
+		
+		# Ninguno tiene volumen definido
+		else:
+			print(f"Ninguno de los estados {estado_in.nombre} ni {estado_out.nombre} puede ser definido.")
+
+		def in_or_out_calor_ModeloGasIdeal(v):
+			"""
+			Retorna la presión P para un gas ideal en un proceso de adicion o rechazo de calor -> isotermico, dado v.
+			"""
+			v = np.asarray(v)
+			return (self.R_gas*estado_in.T)/v
+		return in_or_out_calor_ModeloGasIdeal
+	
+	""" def resolver_interenfriamiento_recalentamiento(self, estado_in, estado_out, delta_T):
+		super().resolver_interenfriamiento_recalentamiento(estado_in, estado_out, delta_T)
+		# Gas ideal
+
+		def interenfriamiento_recalentamiento_ModeloGasIdeal(v):
+			'''
+			Retorna la presión T para un gas ideal en un proceso de adicion o rechazo de calor, dado v.
+			'''
+			v = np.asarray(v)
+			return (estado_in.P/self.R_gas)*v
+		return interenfriamiento_recalentamiento_ModeloGasIdeal """
 
 	def resolver_politropico(self, estado_in, estado_out, n, **kwargs):
 		super().resolver_politropico(estado_in, estado_out)
@@ -374,7 +614,7 @@ class ModeloGasIdeal(ModeloTermodinamico):
 			estado.h = self.cp * estado.T
 
 		else:
-			raise ValueError(f"Combinación de propiedades no soportada o insuficiente.")
+			print(f"Combinación de propiedades no soportada o insuficiente.")
 		
 from scipy.optimize import fsolve
 

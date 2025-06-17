@@ -18,13 +18,13 @@ class Estado:
 	"""
 
 
-	def __init__(self, modelo, nombre=""):
+	def __init__(self, modelo, nombre=0):
 		"""
 		Inicializa el estado con un modelo y un nombre.
 
 		Args:
-			modelo (ModeloTermodinamico): Modelo para calcular propiedades.
-			nombre (str, optional): Nombre del estado. Por defecto "".
+			modelo (ModeloTermodinamico): Modelo para calcular propiedades. 
+			nombre (str, optional): Nombre del estado. Por defecto "". Corresponde al numero (int) del estado, mas que un nombre es un identificador.
 		"""
 		self.nombre = nombre
 		self.modelo = modelo
@@ -82,11 +82,11 @@ class CicloTermodinamico:
 	Atributes:
 		modelo (ModeloTermodinamico): Modelo termodinámico utilizado.
 		n_estados (int): Número de estados que conforman el ciclo.
-		n_values (int): Número de estados internos a cada proceso del ciclo.
+		n_values (int): Número de estados internos a cada proceso del ciclo. Default n_values = 35
 		estados (list[Estado]): Lista de estados que componen el ciclo.
 	"""
 
-	def __init__(self, modelo,n_estados, n_values):
+	def __init__(self, modelo,n_estados, n_values = 35):
 		self.modelo = modelo
 		self.n_values = n_values
 		self.estados = np.empty(n_estados, dtype=object) # Se conocen la cantidad de estados que tiene el ciclo
@@ -136,7 +136,7 @@ class CicloTermodinamico:
 		P_values = np.linspace(np.min([estado_in.P,estado_out.P]), np.max([estado_in.P,estado_out.P]), self.n_values)
 		T_values = result(P_values)
 		for i in range(self.n_values):
-			self.estados_internos[self._indice_proceso_actual][i] = self._generar_estado_interno(P = P_values[i], T=T_values[i])
+			self.estados_internos[estado_in.nombre-1][i] = self._generar_estado_interno(P = P_values[i], T=T_values[i])
 
 		
 		self._indice_proceso_actual += 1
@@ -154,7 +154,7 @@ class CicloTermodinamico:
 		v_values = np.linspace(np.min([estado_in.v,estado_out.v]), np.max([estado_in.v,estado_out.v]), self.n_values)
 		P_values = result(v_values)
 		for i in range(self.n_values):
-			self.estados_internos[self._indice_proceso_actual][i] = self._generar_estado_interno(v = v_values[i], P=P_values[i])
+			self.estados_internos[estado_in.nombre-1][i] = self._generar_estado_interno(v = v_values[i], P=P_values[i])
 
 		self._indice_proceso_actual += 1
 
@@ -171,7 +171,7 @@ class CicloTermodinamico:
 		v_values = np.linspace(np.min([estado_in.v,estado_out.v]), np.max([estado_in.v,estado_out.v]), self.n_values)
 		T_values = result(v_values)
 		for i in range(self.n_values):
-			self.estados_internos[self._indice_proceso_actual][i] = self._generar_estado_interno(v = v_values[i], T=T_values[i])
+			self.estados_internos[estado_in.nombre-1][i] = self._generar_estado_interno(v = v_values[i], T=T_values[i])
 		
 		self._indice_proceso_actual += 1
 
@@ -188,7 +188,7 @@ class CicloTermodinamico:
 		v_values = np.linspace(np.min([estado_in.v,estado_out.v]), np.max([estado_in.v,estado_out.v]), self.n_values)
 		P_values = result(v_values)
 		for i in range(self.n_values):
-			self.estados_internos[self._indice_proceso_actual][i] = self._generar_estado_interno(v = v_values[i], P=P_values[i])
+			self.estados_internos[estado_in.nombre-1][i] = self._generar_estado_interno(v = v_values[i], P=P_values[i])
 		
 		self._indice_proceso_actual += 1
 
@@ -205,10 +205,44 @@ class CicloTermodinamico:
 		v_values = np.linspace(np.min([estado_in.v,estado_out.v]), np.max([estado_in.v,estado_out.v]), self.n_values)
 		P_values = result(v_values)
 		for i in range(self.n_values):
-			self.estados_internos[self._indice_proceso_actual][i] = self._generar_estado_interno(v=v_values[i], P = P_values[i])
+			self.estados_internos[estado_in.nombre-1][i] = self._generar_estado_interno(v=v_values[i], P = P_values[i])
 
 		self._indice_proceso_actual += 1
+
+	def proceso_in_or_out_calor(self,estado_in, estado_out, calor):
+		'''
+		Relaciona dos estados de un ciclo termodinámico mediante un proceso de adicion o rechazo de calor a temperatura constante.
+
+		Args:
+			estado_in (Estado): Estado de entrada en la secuencia del ciclo.
+			estado_out (Estado): Estado de salida en la secuencia del ciclo.
+			calor (float): Calor de entrada (positivo) o salida (negativo) del proceso.
+		'''
+		result = self.modelo.resolver_in_or_out_calor(estado_in, estado_out, calor)
+		v_values = np.linspace(np.min([estado_in.v,estado_out.v]), np.max([estado_in.v,estado_out.v]), self.n_values)
+		P_values = result(v_values)
+		for i in range(self.n_values):
+			self.estados_internos[estado_in.nombre-1][i] = self._generar_estado_interno(v=v_values[i], P = P_values[i])
 	
+		self._indice_proceso_actual += 1
+
+	"""def proceso_interenfriamiento_recalentamiento(self,estado_in, estado_out, delta_T):
+		'''
+		Relaciona dos estados de un ciclo termodinámico mediante un proceso de adicion o rechazo de calor con un cambio de temperatura determinado.
+
+		Args:
+			estado_in (Estado): Estado de entrada en la secuencia del ciclo.
+			estado_out (Estado): Estado de salida en la secuencia del ciclo.
+			calor (float): Calor de entrada (positivo) o salida (negativo) del proceso.
+		'''
+		result = self.modelo.resolver_interenfriamiento_recalentamiento(estado_in, estado_out, delta_T)
+		v_values = np.linspace(np.min([estado_in.v,estado_out.v]), np.max([estado_in.v,estado_out.v]), self.n_values)
+		T_values = result(v_values)
+		for i in range(self.n_values):
+			self.estados_internos[estado_in.nombre-1][i] = self._generar_estado_interno(v=v_values[i], T = T_values[i])
+	
+		self._indice_proceso_actual += 1 """
+
 
 	def mostrar_ciclo(self):
 		"""
@@ -229,7 +263,7 @@ class CicloTermodinamico:
 			fig, ax: Figura y eje del gráfico.
 		"""
 		if ax is None:
-			fig, ax = plt.subplots(figsize=(8, 6))
+			fig, ax = plt.subplots(figsize=(6, 4))
 		else:
 			fig = ax.figure
 
@@ -274,7 +308,7 @@ class CicloTermodinamico:
 		import matplotlib.pyplot as plt
 
 		if ax is None:
-			fig, ax = plt.subplots(figsize=(8, 6))
+			fig, ax = plt.subplots(figsize=(6, 4))
 		else:
 			fig = ax.figure
 
