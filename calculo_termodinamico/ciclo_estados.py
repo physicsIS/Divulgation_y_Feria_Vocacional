@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 
 # Definición de la clase estado
 class Estado:
@@ -82,13 +83,14 @@ class CicloTermodinamico:
 	Atributes:
 		modelo (ModeloTermodinamico): Modelo termodinámico utilizado.
 		n_estados (int): Número de estados que conforman el ciclo.
-		n_values (int): Número de estados internos a cada proceso del ciclo. Default n_values = 35
+		n_values (int): Número de estados internos a cada proceso del ciclo, debe ser un número mayor o igual a 0. Default n_values = 35.
 		estados (list[Estado]): Lista de estados que componen el ciclo.
+		direccion (str): Dirección en la que se recorre el ciclo. Use "horario" o "antihorario".
 	"""
 
 	def __init__(self, modelo,n_estados, n_values = 35):
 		self.modelo = modelo
-		self.n_values = n_values
+		self.n_values = n_values +2
 		self.estados = np.empty(n_estados, dtype=object) # Se conocen la cantidad de estados que tiene el ciclo
 		self.estados_internos = np.empty((n_estados,n_values), dtype=object) # Se genera una lista para los estados internos entre cada proceso.
 		self._indice_estado_actual = 0  # Contador de estado
@@ -133,9 +135,9 @@ class CicloTermodinamico:
 		'''
 
 		result = self.modelo.resolver_isocorico(estado_in,estado_out)
-		P_values = np.linspace(np.min([estado_in.P,estado_out.P]), np.max([estado_in.P,estado_out.P]), self.n_values)
+		P_values = np.linspace(estado_in.P,estado_out.P, self.n_values)[1:-1]
 		T_values = result(P_values)
-		for i in range(self.n_values):
+		for i in range(self.n_values-2):
 			self.estados_internos[estado_in.nombre-1][i] = self._generar_estado_interno(P = P_values[i], T=T_values[i])
 
 		
@@ -151,9 +153,10 @@ class CicloTermodinamico:
 		'''
 
 		result = self.modelo.resolver_isotermico(estado_in,estado_out)
-		v_values = np.linspace(np.min([estado_in.v,estado_out.v]), np.max([estado_in.v,estado_out.v]), self.n_values)
+		v_values = np.linspace(estado_in.v,estado_out.v, self.n_values)[1:-1]
+
 		P_values = result(v_values)
-		for i in range(self.n_values):
+		for i in range(self.n_values-2):
 			self.estados_internos[estado_in.nombre-1][i] = self._generar_estado_interno(v = v_values[i], P=P_values[i])
 
 		self._indice_proceso_actual += 1
@@ -168,9 +171,9 @@ class CicloTermodinamico:
 		'''
 
 		result = self.modelo.resolver_isobarico(estado_in,estado_out)
-		v_values = np.linspace(np.min([estado_in.v,estado_out.v]), np.max([estado_in.v,estado_out.v]), self.n_values)
+		v_values = np.linspace(estado_in.v,estado_out.v, self.n_values)[1:-1]
 		T_values = result(v_values)
-		for i in range(self.n_values):
+		for i in range(self.n_values-2):
 			self.estados_internos[estado_in.nombre-1][i] = self._generar_estado_interno(v = v_values[i], T=T_values[i])
 		
 		self._indice_proceso_actual += 1
@@ -185,9 +188,9 @@ class CicloTermodinamico:
 		'''
 
 		result = self.modelo.resolver_isoentalpico(estado_in,estado_out)
-		v_values = np.linspace(np.min([estado_in.v,estado_out.v]), np.max([estado_in.v,estado_out.v]), self.n_values)
+		v_values = np.linspace(estado_in.v,estado_out.v, self.n_values)[1:-1]
 		P_values = result(v_values)
-		for i in range(self.n_values):
+		for i in range(self.n_values-2):
 			self.estados_internos[estado_in.nombre-1][i] = self._generar_estado_interno(v = v_values[i], P=P_values[i])
 		
 		self._indice_proceso_actual += 1
@@ -202,9 +205,9 @@ class CicloTermodinamico:
 		'''
 
 		result = self.modelo.resolver_isoentropico(estado_in,estado_out)
-		v_values = np.linspace(np.min([estado_in.v,estado_out.v]), np.max([estado_in.v,estado_out.v]), self.n_values)
+		v_values = np.linspace(estado_in.v,estado_out.v, self.n_values)[1:-1]
 		P_values = result(v_values)
-		for i in range(self.n_values):
+		for i in range(self.n_values-2):
 			self.estados_internos[estado_in.nombre-1][i] = self._generar_estado_interno(v=v_values[i], P = P_values[i])
 
 		self._indice_proceso_actual += 1
@@ -219,9 +222,9 @@ class CicloTermodinamico:
 			calor (float): Calor de entrada (positivo) o salida (negativo) del proceso.
 		'''
 		result = self.modelo.resolver_in_or_out_calor(estado_in, estado_out, calor)
-		v_values = np.linspace(np.min([estado_in.v,estado_out.v]), np.max([estado_in.v,estado_out.v]), self.n_values)
+		v_values = np.linspace(estado_in.v,estado_out.v, self.n_values)[1:-1]
 		P_values = result(v_values)
-		for i in range(self.n_values):
+		for i in range(self.n_values-2):
 			self.estados_internos[estado_in.nombre-1][i] = self._generar_estado_interno(v=v_values[i], P = P_values[i])
 	
 		self._indice_proceso_actual += 1
@@ -236,7 +239,7 @@ class CicloTermodinamico:
 			calor (float): Calor de entrada (positivo) o salida (negativo) del proceso.
 		'''
 		result = self.modelo.resolver_interenfriamiento_recalentamiento(estado_in, estado_out, delta_T)
-		v_values = np.linspace(np.min([estado_in.v,estado_out.v]), np.max([estado_in.v,estado_out.v]), self.n_values)
+		v_values = np.linspace(estado_in.v,estado_out.v, self.n_values)
 		T_values = result(v_values)
 		for i in range(self.n_values):
 			self.estados_internos[estado_in.nombre-1][i] = self._generar_estado_interno(v=v_values[i], T = T_values[i])
@@ -250,89 +253,190 @@ class CicloTermodinamico:
 		"""
 		for estado in self.estados:
 			print(estado.resumen())
+	
+	def generar_dataframes(self, opcion=1):
+			"""
+			Genera DataFrames con los estados del ciclo termodinámico.
 
-	def graficar_diagrama_Ts(self, nombre_ciclo="Ciclo termodinámico", ax=None):
+			Parameters
+			----------
+			opcion : int
+				- 1: Retorna un DataFrame con los estados principales del ciclo.
+				- 2: Retorna una lista con dos DataFrames:
+					1. Estados principales
+					2. Todos los estados (principales e internos)
+
+			Returns
+			-------
+			pandas.DataFrame o list[pandas.DataFrame]
+			"""
+			# Crear DataFrame de estados principales
+			df_principal = pd.DataFrame(
+				[{
+					"nombre": estado.nombre,
+					"P [Pa]": estado.P,
+					"T [K]": estado.T,
+					"v [m³/kg]": estado.v,
+					"u [J/kg]": estado.u,
+					"h [J/kg]": estado.h,
+					"s [J/kg·K]": estado.s
+				} for estado in self.estados if estado is not None]
+			)
+
+			if opcion == 1:
+				return df_principal
+
+			elif opcion == 2:
+				lista_estados = []
+				for i, estado in enumerate(self.estados):
+					if estado is None:
+						continue
+
+					# Estado principal
+					lista_estados.append({
+						"nombre": str(estado.nombre),
+						"P [Pa]": estado.P,
+						"T [K]": estado.T,
+						"v [m³/kg]": estado.v,
+						"u [J/kg]": estado.u,
+						"h [J/kg]": estado.h,
+						"s [J/kg·K]": estado.s
+					})
+
+					# Estados internos del tramo correspondiente
+					if i < len(self.estados_internos):
+						contador_interno = 1
+						for estado_int in self.estados_internos[i]:
+							if estado_int is not None:
+								lista_estados.append({
+									"nombre": f"{estado.nombre}.{contador_interno}",
+									"P [Pa]": estado_int.P,
+									"T [K]": estado_int.T,
+									"v [m³/kg]": estado_int.v,
+									"u [J/kg]": estado_int.u,
+									"h [J/kg]": estado_int.h,
+									"s [J/kg·K]": estado_int.s
+								})
+								contador_interno += 1
+
+				df_completo = pd.DataFrame(lista_estados)
+				return [df_principal, df_completo]
+
+			else:
+				raise ValueError("Opción inválida. Debe ser 1 o 2.")
+			
+	def graficar_diagrama_Pv(self, nombre_ciclo="Ciclo termodinámico", ax=None):
 		"""
-		Grafica el diagrama T-s del ciclo termodinámico.
-
-		Args:
-			nombre_ciclo (str): Título del gráfico.
-			ax (matplotlib.axes.Axes, opcional): Eje sobre el que se grafica. Si no se proporciona, se crea uno nuevo.
-
-		Returns:
-			fig, ax: Figura y eje del gráfico.
+		Grafica el diagrama P-v del ciclo termodinámico.
+		Cada tramo tiene su propio color y etiqueta.
 		"""
+		import matplotlib.pyplot as plt
+		import pandas as pd
+
+		# Obtener DataFrames
+		df_principal, df_completo = self.generar_dataframes(opcion=2)
+
+		# Crear columnas auxiliares para ordenar
+		df_completo["tramo"] = df_completo["nombre"].apply(lambda x: str(x).split(".")[0])
+		df_completo["subindice"] = df_completo["nombre"].apply(
+			lambda x: 0 if "." not in str(x) else int(str(x).split(".")[1])
+		)
+		df_completo.sort_values(by=["tramo", "subindice"], inplace=True)
+
+		colores = plt.cm.tab10.colors
 		if ax is None:
 			fig, ax = plt.subplots(figsize=(6, 4))
 		else:
 			fig = ax.figure
 
-		colores = plt.cm.tab10.colors
+		tramos_unicos = df_principal["nombre"].astype(str).tolist()
+		n_tramos = len(tramos_unicos)
 
-		# Graficar tramos y puntos intermedios
-		for i, tramo in enumerate(self.estados_internos):
-			s_vals = [estado.s for estado in tramo if estado is not None]
-			T_vals = [estado.T for estado in tramo if estado is not None]
-			ax.plot(s_vals, T_vals, color=colores[i % len(colores)],
-					label=f"Tramo {i+1} → {i+2 if i+2 <= len(self.estados) else 1}")
-			ax.scatter(s_vals, T_vals, color=colores[i % len(colores)], s=20)
+		# Graficar cada tramo
+		for i, tramo in enumerate(tramos_unicos):
+			estado_ini = df_principal.iloc[i]
+			estado_fin = df_principal.iloc[(i + 1) % n_tramos]
+
+			grupo = df_completo[df_completo["tramo"] == tramo]
+
+			# Secuencia: estado inicial -> internos -> estado final
+			v_vals = [estado_ini["v [m³/kg]"]] + grupo["v [m³/kg]"].tolist() + [estado_fin["v [m³/kg]"]]
+			P_vals = [estado_ini["P [Pa]"]] + grupo["P [Pa]"].tolist() + [estado_fin["P [Pa]"]]
+
+			ax.plot(v_vals, P_vals, color=colores[i % len(colores)],
+					label=f"Tramo {tramo} → {estado_fin['nombre']}")
+			ax.scatter(v_vals, P_vals, color=colores[i % len(colores)], s=20)
 
 		# Estados principales
-		for estado in self.estados:
-			if estado is not None:
-				ax.scatter(estado.s, estado.T, color='black', s=60,
-							edgecolor='white', zorder=5)
-				ax.annotate(text=estado.nombre, xy = (estado.s + estado.s/100,estado.T + estado.T/100))
+		ax.scatter(df_principal["v [m³/kg]"], df_principal["P [Pa]"],
+				color='black', s=60, edgecolor='white', zorder=5, label="Estados principales")
 
-		# Estética
-		ax.set_xlabel('Entropía específica [J/kg·K]')
-		ax.set_ylabel('Temperatura [K]')
-		ax.set_title(f'Diagrama T-s: {nombre_ciclo}')
+		for _, estado in df_principal.iterrows():
+			ax.annotate(estado["nombre"],
+						xy=(estado["v [m³/kg]"] * 1.01, estado["P [Pa]"] * 1.01))
+
+		ax.set_xlabel(r'Volumen específico [$m^3$/kg]')
+		ax.set_ylabel('Presión [Pa]')
+		ax.set_title(f'Diagrama P-v: {nombre_ciclo}')
 		ax.grid(True)
 		ax.legend()
 		fig.tight_layout()
 
 		return fig, ax
 	
-	def graficar_diagrama_Pv(self, nombre_ciclo="Ciclo termodinámico", ax=None):
+	def graficar_diagrama_Ts(self, nombre_ciclo="Ciclo termodinámico", ax=None):
 		"""
-		Grafica el diagrama P-v del ciclo termodinámico.
-
-		Args:
-			nombre_ciclo (str): Título del gráfico.
-			ax (matplotlib.axes.Axes, opcional): Eje sobre el que se grafica. Si no se proporciona, se crea uno nuevo.
-
-		Returns:
-			fig, ax: Figura y eje del gráfico.
+		Grafica el diagrama T-s del ciclo termodinámico.
+		Cada tramo tiene su propio color y etiqueta.
 		"""
 		import matplotlib.pyplot as plt
+		import pandas as pd
 
+		# Obtener DataFrames
+		df_principal, df_completo = self.generar_dataframes(opcion=2)
+
+		# Crear columnas auxiliares para ordenar
+		df_completo["tramo"] = df_completo["nombre"].apply(lambda x: str(x).split(".")[0])
+		df_completo["subindice"] = df_completo["nombre"].apply(
+			lambda x: 0 if "." not in str(x) else int(str(x).split(".")[1])
+		)
+		df_completo.sort_values(by=["tramo", "subindice"], inplace=True)
+
+		colores = plt.cm.tab10.colors
 		if ax is None:
 			fig, ax = plt.subplots(figsize=(6, 4))
 		else:
 			fig = ax.figure
 
-		colores = plt.cm.tab10.colors
+		tramos_unicos = df_principal["nombre"].astype(str).tolist()
+		n_tramos = len(tramos_unicos)
 
-		# Graficar tramos y puntos intermedios
-		for i, tramo in enumerate(self.estados_internos):
-			v_vals = [estado.v for estado in tramo if estado is not None]
-			P_vals = [estado.P for estado in tramo if estado is not None]
-			ax.plot(v_vals, P_vals, color=colores[i % len(colores)],
-					label=f"Tramo {i+1} → {i+2 if i+2 <= len(self.estados) else 1}")
-			ax.scatter(v_vals, P_vals, color=colores[i % len(colores)], s=20)
+		# Graficar cada tramo
+		for i, tramo in enumerate(tramos_unicos):
+			estado_ini = df_principal.iloc[i]
+			estado_fin = df_principal.iloc[(i + 1) % n_tramos]
+
+			grupo = df_completo[df_completo["tramo"] == tramo]
+
+			# Secuencia: estado inicial -> internos -> estado final
+			s_vals = [estado_ini["s [J/kg·K]"]] + grupo["s [J/kg·K]"].tolist() + [estado_fin["s [J/kg·K]"]]
+			T_vals = [estado_ini["T [K]"]] + grupo["T [K]"].tolist() + [estado_fin["T [K]"]]
+
+			ax.plot(s_vals, T_vals, color=colores[i % len(colores)],
+					label=f"Tramo {tramo} → {estado_fin['nombre']}")
+			ax.scatter(s_vals, T_vals, color=colores[i % len(colores)], s=20)
 
 		# Estados principales
-		for estado in self.estados:
-			if estado is not None:
-				ax.scatter(estado.v, estado.P, color='black', s=60,
-						edgecolor='white', zorder=5)
-				ax.annotate(text=estado.nombre, xy = (estado.v + estado.v/100,estado.P + estado.P/100))
+		ax.scatter(df_principal["s [J/kg·K]"], df_principal["T [K]"],
+				color='black', s=60, edgecolor='white', zorder=5, label="Estados principales")
 
-		# Estética
-		ax.set_xlabel(r'Volumen específico [$m^3$/kg]')
-		ax.set_ylabel('Presión [Pa]')
-		ax.set_title(f'Diagrama P-v: {nombre_ciclo}')
+		for _, estado in df_principal.iterrows():
+			ax.annotate(estado["nombre"],
+						xy=(estado["s [J/kg·K]"] * 1.01, estado["T [K]"] * 1.01))
+
+		ax.set_xlabel('Entropía específica [J/kg·K]')
+		ax.set_ylabel('Temperatura [K]')
+		ax.set_title(f'Diagrama T-s: {nombre_ciclo}')
 		ax.grid(True)
 		ax.legend()
 		fig.tight_layout()
