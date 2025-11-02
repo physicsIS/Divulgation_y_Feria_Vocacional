@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!DOCTYPE Xdmf SYSTEM "Xdmf.dtd" []>
+<Xdmf Version="3.0" xmlns:xi="http://www.w3.org/2001/XInclude">
+  <Domain>
+    <Grid Name="TimeSeries" GridType="Collection" CollectionType="Temporal">
+      <Grid Name="mesh" GridType="Uniform">
+        <Topology NumberOfElements="540" TopologyType="Tetrahedron" NodesPerElement="4">
+          <DataItem Dimensions="540 4" NumberType="UInt" Format="HDF">beam_deflection.h5:/Mesh/0/mesh/topology</DataItem>
+        </Topology>
+        <Geometry GeometryType="XYZ">
+          <DataItem Dimensions="176 3" Format="HDF">beam_deflection.h5:/Mesh/0/mesh/geometry</DataItem>
+        </Geometry>
+        <Time Value="0" />
+        <Attribute Name="Displacement Vector" AttributeType="Vector" Center="Node">
+          <DataItem Dimensions="176 3" Format="HDF">beam_deflection.h5:/VisualisationVector/0</DataItem>
+        </Attribute>
+        <Attribute Name="von Mises stress" AttributeType="Scalar" Center="Node">
+          <DataItem Dimensions="176 1" Format="HDF">beam_deflection.h5:/VisualisationVector/1</DataItem>
+        </Attribute>
+      </Grid>
+    </Grid>
+  </Domain>
+</Xdmf>
